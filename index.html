@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Banheira dos Anos 90 - TikTok Live Interativa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Fredoka:wght@500;700&family=Inter:wght@600;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #09090b;
+      font-family: 'Fredoka', 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Container Vertical 9:16 Otimizado para OBS / TikTok Live */
+    #live-stage {
+      position: relative;
+      width: 100vw;
+      max-width: 450px;
+      height: 100vh;
+      max-height: 820px;
+      background: radial-gradient(circle at 50% 35%, #581c87 0%, #2e1065 55%, #0f0722 100%);
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    @media (min-width: 460px) {
+      #live-stage {
+        height: 95vh;
+        border-radius: 24px;
+        border: 3px solid #eab308;
+      }
+    }
+
+    /* Cortinas Laterais de Auditório Anos 90 */
+    .curtain-left, .curtain-right {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 40px;
+      z-index: 5;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        90deg,
+        #991b1b 0px,
+        #dc2626 10px,
+        #7f1d1d 20px
+      );
+      box-shadow: inset -6px 0 15px rgba(0, 0, 0, 0.6);
+    }
+    .curtain-left { left: 0; border-right: 3px solid #facc15; }
+    .curtain-right { right: 0; border-left: 3px solid #facc15; box-shadow: inset 6px 0 15px rgba(0, 0, 0, 0.6); }
+
+    /* Letreiro Luminoso Retrô */
+    .retro-sign {
+      font-family: 'Bungee', cursive;
+      background: linear-gradient(180deg, #7f1d1d 0%, #450a0a 100%);
+      border: 4px solid #facc15;
+      box-shadow: 0 0 20px rgba(250, 204, 21, 0.5), inset 0 0 12px rgba(0, 0, 0, 0.8);
+      position: relative;
+    }
+
+    .bulb-strip {
+      background-image: radial-gradient(#fef08a 35%, transparent 40%);
+      background-size: 14px 14px;
+      animation: blinkBulbs 0.8s infinite alternate;
+    }
+
+    @keyframes blinkBulbs {
+      0% { opacity: 0.6; filter: drop-shadow(0 0 2px #facc15); }
+      100% { opacity: 1; filter: drop-shadow(0 0 8px #fef08a); }
+    }
+
+    /* Vinheta de Câmera Lenta Dramática */
+    .dramatic-vignette {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle, transparent 40%, rgba(220, 38, 38, 0.45) 100%);
+      z-index: 25;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .dramatic-active .dramatic-vignette {
+      opacity: 1;
+      animation: pulseRed 0.5s infinite alternate;
+    }
+
+    @keyframes pulseRed {
+      from { background: radial-gradient(circle, transparent 38%, rgba(220, 38, 38, 0.35) 100%); }
+      to { background: radial-gradient(circle, transparent 32%, rgba(220, 38, 38, 0.65) 100%); }
+    }
+
+    /* Canvas Principal */
+    #gameCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      display: block;
+    }
+
+    /* Tabela Lateral Estilo TikTok Live */
+    .gift-card {
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(250, 204, 21, 0.45);
+      border-radius: 12px;
+      transition: transform 0.15s ease;
+    }
+    .gift-card:active {
+      transform: scale(0.95);
+    }
+
+    /* Painel de Simulação Discreto no Rodapé */
+    #sim-panel {
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.92) 0%, rgba(9, 9, 11, 0.98) 100%);
+      border-top: 2px solid rgba(250, 204, 21, 0.4);
+      z-index: 30;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      80% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .podium-modal {
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Palco Vertical 9:16 -->
+  <div id="live-stage">
+    <!-- Cortinas de Auditório -->
+    <div class="curtain-left"></div>
+    <div class="curtain-right"></div>
+
+    <!-- Vinheta Dramática de Câmera Lenta -->
+    <div class="dramatic-vignette"></div>
+
+    <!-- Canvas Principal -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- TOPO: Letreiro Retrô, Cronômetro e Líder -->
+    <header class="relative z-20 pt-3 px-4 flex flex-col items-center">
+      <div class="retro-sign rounded-2xl px-4 py-1.5 w-full max-w-[335px] text-center">
+        <div class="bulb-strip absolute inset-x-1 top-0.5 h-1.5"></div>
+        <h1 class="text-yellow-300 text-lg sm:text-xl tracking-wider drop-shadow-[0_2px_2px_rgba(0,0,0,0.9)] leading-tight">
+          🧼 BANHEIRA DOS ANOS 90 🛁
+        </h1>
+        <p class="text-[10px] text-amber-200 uppercase tracking-widest font-bold">
+          ★ Especial Auditório Domingo ★
+        </p>
+        <div class="bulb-strip absolute inset-x-1 bottom-0.5 h-1.5"></div>
+      </div>
+
+      <!-- Barra de Status: Cronômetro, Líder Atual e Áudio -->
+      <div class="mt-2 w-full max-w-[340px] flex items-center justify-between gap-2">
+        <div class="bg-black/75 border-2 border-yellow-400 rounded-xl px-3 py-1 flex items-center gap-1.5 shadow-lg">
+          <span class="text-base">⏱️</span>
+          <span id="timer-display" class="font-['Bungee'] text-white text-base">01:00</span>
+        </div>
+
+        <div class="flex-1 bg-black/75 border border-pink-400/60 rounded-xl px-2.5 py-1 flex items-center justify-between shadow-lg overflow-hidden">
+          <span class="text-[11px] text-pink-200 font-bold uppercase">🧼 Líder:</span>
+          <span id="leader-display" class="text-xs text-yellow-300 font-extrabold truncate ml-1">Aguardando...</span>
+        </div>
+
+        <button id="btn-audio" onclick="toggleAudio()" title="Ligar/Desligar Trilha e Efeitos"
+          class="bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold rounded-xl p-2 shadow-lg transition active:scale-90">
+          🔇
+        </button>
+      </div>
+
+      <!-- Banner de Alerta Dramático -->
+      <div id="dramatic-banner" class="hidden mt-2 bg-red-600 border-2 border-yellow-300 text-white font-['Bungee'] text-xs px-3 py-1 rounded-full shadow-xl animate-bounce text-center">
+        🚨 CÂMERA LENTA DRAMÁTICA! 🚨
+      </div>
+    </header>
+
+    <!-- MEIO: Feed Rápido à Esquerda e Tabela de Presentes à Direita -->
+    <div class="relative z-20 flex-1 pointer-events-none flex justify-between items-start px-3 pt-2">
+      <div id="event-feed" class="w-40 flex flex-col gap-1.5 mt-auto mb-2 max-h-36 overflow-hidden justify-end"></div>
+
+      <div class="pointer-events-auto flex flex-col gap-1.5 w-[138px]">
+        <div class="gift-card p-1.5 flex items-center gap-2">
+          <span class="text-lg">💬</span>
+          <div class="leading-tight">
+            <div class="text-[11px] font-extrabold text-white">Comentar</div>
+            <div class="text-[9px] text-cyan-300 font-semibold">Entra na Plateia</div>
+          </div>
+        </div>
+
+        <div class="gift-card p-1.5 flex items-center gap-2">
+          <span class="text-lg">🌹</span>
+          <div class="leading-tight">
+            <div class="text-[11px] font-extrabold text-pink-300">Rosa (1)</div>
+            <div class="text-[9px] text-white font-semibold">Pula na Banheira</div>
+          </div>
+        </div>
+
+        <div class="gift-card p-1.5 flex items-center gap-2">
+          <span class="text-lg">🍦</span>
+          <div class="leading-tight">
+            <div class="text-[11px] font-extrabold text-amber-300">Casquinha (10)</div>
+            <div class="text-[9px] text-white font-semibold">Turbo + Imã 🧼</div>
+          </div>
+        </div>
+
+        <div class="gift-card p-1.5 flex items-center gap-2 border-yellow-400 bg-red-950/80">
+          <span class="text-lg">🦖</span>
+          <div class="leading-tight">
+            <div class="text-[11px] font-extrabold text-yellow-300">Mini Dino (100+)</div>
+            <div class="text-[9px] text-amber-100 font-semibold">Modo Gigante + Zoom!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RODAPÉ: Painel de Simulação para o Streamer -->
+    <footer id="sim-panel" class="p-2.5 flex flex-col gap-2">
+      <div class="flex items-center justify-between px-1">
+        <span class="text-[10px] uppercase tracking-wider text-yellow-300 font-extrabold flex items-center gap-1">
+          🎛️ Painel de Teste (<span id="count-display">6</span> na banheira)
+        </span>
+        <button onclick="resetRound()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-0.5 rounded-md font-bold transition">
+          🔄 Limpar / Resetar
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-1.5">
+        <button onclick="simulateComment()"
+          class="bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-bold text-xs py-2 px-2 rounded-xl shadow flex items-center justify-center gap-1 transition">
+          <span>💬</span> + Comentar (Plateia)
+        </button>
+
+        <button onclick="simulateRosa()"
+          class="bg-pink-600 hover:bg-pink-500 active:scale-95 text-white font-bold text-xs py-2 px-2 rounded-xl shadow flex items-center justify-center gap-1 transition">
+          <span>🌹</span> + Enviar Rosa
+        </button>
+
+        <button onclick="simulateMediumGift()"
+          class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-extrabold text-xs py-2 px-2 rounded-xl shadow flex items-center justify-center gap-1 transition">
+          <span>🍦</span> + Presente Médio
+        </button>
+
+        <button onclick="simulateExpensiveGift()"
+          class="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 hover:brightness-110 active:scale-95 text-white font-extrabold text-xs py-2 px-2 rounded-xl shadow-lg border border-yellow-200 flex items-center justify-center gap-1 transition">
+          <span>🦖</span> + Presente Caro (Zoom)
+        </button>
+      </div>
+    </footer>
+
+    <!-- MODAL DE PÓDIO (FIM DA RODADA DE 60s) -->
+    <div id="podium-overlay" class="hidden absolute inset-0 z-40 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="podium-modal bg-gradient-to-b from-purple-900 via-indigo-950 to-slate-950 border-4 border-yellow-400 rounded-3xl p-5 w-full max-w-[340px] text-center shadow-2xl">
+        <div class="text-4xl mb-1">🏆🛁</div>
+        <h2 class="font-['Bungee'] text-yellow-300 text-xl tracking-wide">FIM DA RODADA!</h2>
+        <p class="text-xs text-purple-200 mb-4">Rei / Rainha da Banheira dos Anos 90</p>
+
+        <div id="podium-list" class="flex flex-col gap-2 mb-5"></div>
+
+        <button onclick="resetRound()"
+          class="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-['Bungee'] text-sm py-3 rounded-2xl shadow-lg active:scale-95 transition">
+          NOVA RODADA (60s)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * ============================================================================
+     * BANHEIRA DOS ANOS 90 - TIKTOK LIVE INTERATIVA
+     * Motor Gráfico 2D com Organização Espacial em Camadas (Anti-Sobreposição)
+     * e Trilha Sonora Retrô Sintetizada via Web Audio API
+     * ============================================================================
+     */
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const stageEl = document.getElementById('live-stage');
+
+    // Estado Global
+    let width = 450;
+    let height = 800;
+    let timeLeft = 60;
+    let roundActive = true;
+    let lastTime = 0;
+    let timerAccumulator = 0;
+
+    // Câmera / Zoom Dramático
+    let camera = {
+      x: 225,
+      y: 425,
+      zoom: 1,
+      targetX: 225,
+      targetY: 425,
+      targetZoom: 1,
+      dramaticTimer: 0,
+      focusSwimmer: null
+    };
+
+    // Entidades
+    let audience = [];
+    let swimmers = [];
+    let soaps = [];
+    let bubbles = [];
+    let particles = [];
+    let shockwaves = [];
+    let floatTexts = [];
+
+    // Perfis Retrô Anos 90
+    const mockUsers = [
+      { name: '@joao_nostalgia', gender: 'M', skin: '#f5cba7', hair: '#2c1e16', color: '#2563eb', floatie: 'duck' },
+      { name: '@mariana_90s', gender: 'F', skin: '#fad7a0', hair: '#5c3a21', color: '#ec4899', floatie: 'flamingo' },
+      { name: '@carlinhos_sp', gender: 'M', skin: '#d49a6a', hair: '#1a1a1a', color: '#10b981', floatie: 'donut' },
+      { name: '@patricia_lima', gender: 'F', skin: '#f5cba7', hair: '#b7791f', color: '#f59e0b', floatie: 'duck' },
+      { name: '@ze_do_sabonete', gender: 'M', skin: '#8d5524', hair: '#111827', color: '#8b5cf6', floatie: 'duck' },
+      { name: '@juliana_disco', gender: 'F', skin: '#e0ac69', hair: '#7f1d1d', color: '#ef4444', floatie: 'flamingo' },
+      { name: '@ricardo_vhs', gender: 'M', skin: '#f5cba7', hair: '#4a3525', color: '#06b6d4', floatie: 'donut' },
+      { name: '@fernanda_pop', gender: 'F', skin: '#fad7a0', hair: '#1f2937', color: '#d946ef', floatie: 'duck' },
+      { name: '@lucas_auditorio', gender: 'M', skin: '#c68642', hair: '#111827', color: '#84cc16', floatie: 'flamingo' },
+      { name: '@camila_festa', gender: 'F', skin: '#f5cba7', hair: '#92400e', color: '#f97316', floatie: 'donut' },
+      { name: '@bruno_domingo', gender: 'M', skin: '#e0ac69', hair: '#2c1e16', color: '#6366f1', floatie: 'duck' },
+      { name: '@amanda_retro', gender: 'F', skin: '#8d5524', hair: '#111827', color: '#14b8a6', floatie: 'flamingo' },
+      { name: '@diego_domingao', gender: 'M', skin: '#f5cba7', hair: '#4a3525', color: '#0ea5e9', floatie: 'duck' },
+      { name: '@bianca_hit', gender: 'F', skin: '#fad7a0', hair: '#7c2d12', color: '#f43f5e', floatie: 'flamingo' }
+    ];
+    let mockIndex = 0;
+
+    const funnyComments = [
+      'SOLTA O SABONETE!',
+      'KAKAKAKAKA',
+      'TIBUMMM! 💦',
+      'PEGA ELEEE!',
+      'UBAPÁ!! 🎶',
+      'ESCORREGOU! 😂',
+      'OLHA A BOIA!',
+      'CÂMERA LENTA!'
+    ];
+
+    // ============================================================================
+    // ÁUDIO SINTETIZADO RETRÔ ANOS 90 (WEB AUDIO API)
+    // ============================================================================
+    let audioCtx = null;
+    let audioEnabled = false;
+    let beatInterval = null;
+    let beatStep = 0;
+
+    function initAudio() {
+      try {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContext();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+      } catch (e) {
+        console.warn('Web Audio API indisponível:', e);
+      }
+    }
+
+    function toggleAudio() {
+      initAudio();
+      audioEnabled = !audioEnabled;
+      const btn = document.getElementById('btn-audio');
+      btn.textContent = audioEnabled ? '🔊' : '🔇';
+
+      if (audioEnabled) {
+        startRetroBeat();
+      } else {
+        stopRetroBeat();
+      }
+    }
+
+    function startRetroBeat() {
+      stopRetroBeat();
+      beatInterval = setInterval(() => {
+        if (!audioEnabled || !roundActive || !audioCtx) return;
+        const now = audioCtx.currentTime;
+        const isSlowMo = camera.dramaticTimer > 0;
+        if (isSlowMo && beatStep % 2 !== 0) {
+          beatStep++;
+          return;
+        }
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const notes = [130.81, 164.81, 196.00, 164.81, 146.83, 174.61, 220.00, 196.00];
+        const freq = notes[beatStep % notes.length] * (isSlowMo ? 0.72 : 1);
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.19);
+
+        if (beatStep % 2 === 1) {
+          const hatOsc = audioCtx.createOscillator();
+          const hatGain = audioCtx.createGain();
+          hatOsc.type = 'square';
+          hatOsc.frequency.setValueAtTime(isSlowMo ? 320 : 520, now);
+          hatGain.gain.setValueAtTime(0.025, now);
+          hatGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+          hatOsc.connect(hatGain);
+          hatGain.connect(audioCtx.destination);
+          hatOsc.start(now);
+          hatOsc.stop(now + 0.09);
+        }
+
+        beatStep++;
+      }, 240);
+    }
+
+    function stopRetroBeat() {
+      if (beatInterval) {
+        clearInterval(beatInterval);
+        beatInterval = null;
+      }
+    }
+
+    function playSound(type) {
+      if (!audioEnabled || !audioCtx) return;
+      const now = audioCtx.currentTime;
+
+      if (type === 'splash') {
+        const bufferSize = Math.floor(audioCtx.sampleRate * 0.25);
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(450, now);
+        filter.frequency.exponentialRampToValueAtTime(1200, now + 0.22);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.24);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start(now);
+        noise.stop(now + 0.25);
+      } else if (type === 'boing') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(170, now);
+        osc.frequency.exponentialRampToValueAtTime(580, now + 0.09);
+        osc.frequency.exponentialRampToValueAtTime(220, now + 0.18);
+        osc.frequency.exponentialRampToValueAtTime(660, now + 0.28);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.31);
+      } else if (type === 'slip') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(1350, now + 0.18);
+        osc.frequency.exponentialRampToValueAtTime(280, now + 0.42);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.44);
+        osc.start(now);
+        osc.stop(now + 0.45);
+      } else if (type === 'soap') {
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((n, i) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(n, now + i * 0.055);
+          g.gain.setValueAtTime(0.14, now + i * 0.055);
+          g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.055 + 0.18);
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.start(now + i * 0.055);
+          o.stop(now + i * 0.055 + 0.19);
+        });
+      } else if (type === 'turbo') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.35);
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.36);
+        osc.start(now);
+        osc.stop(now + 0.37);
+      } else if (type === 'dramatic') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(155, now);
+        osc.frequency.linearRampToValueAtTime(60, now + 0.95);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+        osc.start(now);
+        osc.stop(now + 1.05);
+      } else if (type === 'fanfare') {
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((n, idx) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(n, now + idx * 0.11);
+          g.gain.setValueAtTime(0.16, now + idx * 0.11);
+          g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + 0.35);
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.start(now + idx * 0.11);
+          o.stop(now + idx * 0.11 + 0.36);
+        });
+      }
+    }
+
+    // ============================================================================
+    // DIMENSIONAMENTO RESPONSIVO E BANHEIRA AMPLIADA
+    // ============================================================================
+    function resizeCanvas() {
+      const rect = stageEl.getBoundingClientRect();
+      width = Math.max(300, rect.width || window.innerWidth);
+      height = Math.max(500, rect.height || window.innerHeight);
+      canvas.width = width;
+      canvas.height = height;
+      camera.x = width / 2;
+      camera.y = height * 0.54;
+      camera.targetX = camera.x;
+      camera.targetY = camera.y;
+    }
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      initBubbles();
+    });
+
+    function getTubGeometry() {
+      return {
+        cx: width / 2,
+        cy: height * 0.54,
+        rx: Math.min(width * 0.42, 185),
+        ry: Math.min(height * 0.25, 200)
+      };
+    }
+
+    /**
+     * SISTEMA DE SLOTS DINÂMICOS EM ANÉIS ELÍPTICOS (ANTI-SOBREPOSIÇÃO)
+     * Distribui os competidores em setores espaçados da banheira (camada interna e externa)
+     * garantindo visibilidade clara mesmo com 12+ competidores simultâneos.
+     */
+    function getHomeSlotPosition(index, total) {
+      const tub = getTubGeometry();
+      if (total <= 1) {
+        return { x: tub.cx, y: tub.cy };
+      }
+
+      // Divide entre anel interno (até 5) e anel externo (restante)
+      const innerCapacity = Math.min(5, total);
+      if (index < innerCapacity) {
+        const angle = (index / innerCapacity) * Math.PI * 2 - Math.PI / 2;
+        return {
+          x: tub.cx + Math.cos(angle) * (tub.rx * 0.36),
+          y: tub.cy + Math.sin(angle) * (tub.ry * 0.36)
+        };
+      } else {
+        const outerIndex = index - innerCapacity;
+        const outerTotal = total - innerCapacity;
+        const angle = (outerIndex / outerTotal) * Math.PI * 2 - Math.PI / 3;
+        return {
+          x: tub.cx + Math.cos(angle) * (tub.rx * 0.72),
+          y: tub.cy + Math.sin(angle) * (tub.ry * 0.72)
+        };
+      }
+    }
+
+    /**
+     * Escala dinâmica inteligente: reduz sutilmente o tamanho dos avatares apenas
+     * quando há muita gente (8+), mantendo 100% da visibilidade de cada um.
+     */
+    function getCrowdScaleFactor() {
+      const count = swimmers.length;
+      if (count <= 6) return 1.0;
+      if (count <= 10) return 0.88;
+      return Math.max(0.74, 1.0 - (count - 6) * 0.025);
+    }
+
+    function spawnSoap() {
+      const tub = getTubGeometry();
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.random() * 0.75;
+      const colors = ['#f472b6', '#fde047', '#38bdf8', '#a78bfa', '#4ade80'];
+      soaps.push({
+        x: tub.cx + Math.cos(angle) * tub.rx * dist,
+        y: tub.cy + Math.sin(angle) * tub.ry * dist,
+        vx: (Math.random() - 0.5) * 65,
+        vy: (Math.random() - 0.5) * 65,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        wobble: Math.random() * Math.PI * 2
+      });
+    }
+
+    function initBubbles() {
+      bubbles = [];
+      const tub = getTubGeometry();
+      for (let i = 0; i < 65; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 0.76 + Math.random() * 0.22; // Espuma concentrada nas bordas para não tapar os avatares
+        bubbles.push({
+          x: tub.cx + Math.cos(angle) * tub.rx * dist,
+          y: tub.cy + Math.sin(angle) * tub.ry * dist,
+          r: 6 + Math.random() * 12,
+          phase: Math.random() * Math.PI * 2,
+          isEdge: true
+        });
+      }
+    }
+
+    function getNextUser() {
+      const base = mockUsers[mockIndex % mockUsers.length];
+      mockIndex++;
+      return {
+        id: base.name + '_' + mockIndex,
+        name: base.name,
+        gender: base.gender,
+        skin: base.skin,
+        hair: base.hair,
+        color: base.color,
+        floatie: base.floatie,
+        initial: base.name.replace('@', '')[0].toUpperCase()
+      };
+    }
+
+    function spawnParticles(x, y, type, count = 7) {
+      const emojis = {
+        splash: ['💦', '💧', '🫧'],
+        celebrate: ['🎉', '🎊', '🎶', '✨', '🧼'],
+        panic: ['💦', '⭐', '💫', '❗'],
+        boing: ['💥', '💫', '🫧']
+      };
+      const pool = emojis[type] || emojis.splash;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+        const speed = 35 + Math.random() * 60;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 20,
+          emoji: pool[Math.floor(Math.random() * pool.length)],
+          size: 11 + Math.random() * 5,
+          life: 0.85 + Math.random() * 0.35
+        });
+      }
+    }
+
+    function addFloatingText(x, y, text, color = '#ffffff') {
+      floatTexts.push({ x, y, text, color, life: 1.25 });
+    }
+
+    function addFeedMessage(icon, text, colorClass = 'text-white') {
+      const feed = document.getElementById('event-feed');
+      if (!feed) return;
+      const item = document.createElement('div');
+      item.className = `bg-black/65 backdrop-blur-sm border border-white/15 rounded-lg px-2 py-1 text-[10px] font-bold ${colorClass} shadow`;
+      item.textContent = `${icon} ${text}`;
+      feed.appendChild(item);
+      while (feed.children.length > 4) {
+        feed.removeChild(feed.firstChild);
+      }
+    }
+
+    // ============================================================================
+    // COMANDOS INTERATIVOS (CHAT E PRESENTES)
+    // ============================================================================
+    function simulateComment() {
+      if (!roundActive) return;
+      const user = getNextUser();
+      const tub = getTubGeometry();
+
+      // Distribui a plateia em arco organizado na arquibancada superior
+      const slotIdx = audience.length;
+      const totalSlots = 20;
+      const t = (slotIdx % totalSlots) / (totalSlots - 1);
+      const sideAngle = -Math.PI * 0.94 + t * (Math.PI * 0.88);
+      const rowOffset = slotIdx >= 10 ? 1.29 : 1.17;
+      const comment = funnyComments[Math.floor(Math.random() * funnyComments.length)];
+
+      audience.push({
+        ...user,
+        x: tub.cx + Math.cos(sideAngle) * tub.rx * rowOffset,
+        y: tub.cy + Math.sin(sideAngle) * tub.ry * rowOffset,
+        jumpPhase: Math.random() * Math.PI * 2,
+        speechText: comment,
+        speechTimer: 4.5
+      });
+
+      if (audience.length > 20) audience.shift();
+      playSound('boing');
+      addFeedMessage('💬', `${user.name}: "${comment}"`, 'text-cyan-200');
+    }
+
+    function simulateRosa(customUser = null, initialAction = 'dance') {
+      if (!roundActive) return null;
+      const user = customUser || getNextUser();
+
+      let existing = swimmers.find(s => s.name === user.name);
+      if (existing) {
+        existing.turboTimer = Math.max(existing.turboTimer, 3.5);
+        existing.action = 'dance';
+        existing.actionTimer = 1.8;
+        spawnParticles(existing.x, existing.y, 'splash', 7);
+        addFloatingText(existing.x, existing.y - 36, '+ENERGIA 💦!', '#f472b6');
+        playSound('splash');
+        return existing;
+      }
+
+      const slotPos = getHomeSlotPosition(swimmers.length, swimmers.length + 1);
+      const newSwimmer = {
+        ...user,
+        x: slotPos.x,
+        y: slotPos.y,
+        vx: 0,
+        vy: 0,
+        score: 0,
+        scale: 1,
+        turboTimer: 0,
+        magnetTimer: 0,
+        dramaticHero: false,
+        animPhase: Math.random() * Math.PI * 2,
+        action: initialAction,
+        actionTimer: 1.8,
+        nextComedyCooldown: 1.5 + Math.random() * 2.2,
+        spinAngle: 0,
+        jumpHeight: 0,
+        targetSoap: null
+      };
+
+      swimmers.push(newSwimmer);
+      updateCountUI();
+      playSound('splash');
+      spawnParticles(newSwimmer.x, newSwimmer.y, 'splash', 9);
+      addFloatingText(newSwimmer.x, newSwimmer.y - 34, 'SPLASH! 💦', '#38bdf8');
+      addFeedMessage('🌹', `${user.name} pulou na banheira!`, 'text-pink-300');
+      return newSwimmer;
+    }
+
+    function simulateMediumGift() {
+      if (!roundActive) return;
+      let target = swimmers.length > 0
+        ? swimmers[Math.floor(Math.random() * swimmers.length)]
+        : simulateRosa();
+
+      target.turboTimer = 6.5;
+      target.magnetTimer = 6.5;
+      target.action = 'victory';
+      target.actionTimer = 2.0;
+      playSound('turbo');
+      spawnParticles(target.x, target.y, 'celebrate', 10);
+      addFloatingText(target.x, target.y - 42, '🍦 TURBO + IMÃ!', '#fbbf24');
+      addFeedMessage('🍦', `${target.name} ativou REBOLADO TURBO!`, 'text-amber-300');
+    }
+
+    function simulateExpensiveGift() {
+      if (!roundActive) return;
+      const user = getNextUser();
+      const hero = simulateRosa(user, 'victory');
+      const tub = getTubGeometry();
+
+      swimmers.forEach(s => {
+        s.dramaticHero = false;
+        s.scale = 1;
+      });
+
+      hero.dramaticHero = true;
+      hero.scale = 1.45;
+      hero.turboTimer = 7.0;
+      hero.magnetTimer = 7.0;
+      hero.action = 'victory';
+      hero.actionTimer = 3.5;
+      hero.score += 3;
+
+      shockwaves.push({
+        x: hero.x,
+        y: hero.y,
+        r: 15,
+        maxR: Math.max(tub.rx, tub.ry) * 1.4,
+        alpha: 0.95
+      });
+
+      swimmers.forEach(other => {
+        if (other !== hero) {
+          const pushAng = Math.atan2(other.y - hero.y, other.x - hero.x);
+          other.vx = Math.cos(pushAng) * 180;
+          other.vy = Math.sin(pushAng) * 180;
+          triggerSlipAction(other, false);
+        }
+      });
+
+      camera.dramaticTimer = 4.8;
+      camera.focusSwimmer = hero;
+
+      for (let i = 0; i < 4; i++) {
+        soaps.push({
+          x: hero.x + (Math.random() - 0.5) * 75,
+          y: hero.y + (Math.random() - 0.5) * 75,
+          vx: (Math.random() - 0.5) * 30,
+          vy: (Math.random() - 0.5) * 30,
+          color: '#fde047',
+          wobble: 0
+        });
+      }
+
+      stageEl.classList.add('dramatic-active');
+      document.getElementById('dramatic-banner').classList.remove('hidden');
+      playSound('dramatic');
+      spawnParticles(hero.x, hero.y, 'celebrate', 15);
+      addFloatingText(hero.x, hero.y - 54, '🦖 MODO GIGANTE! +3🧼', '#fde047');
+      addFeedMessage('🦖', `${hero.name} ATIVOU MODO GIGANTE!`, 'text-yellow-300');
+      updateLeaderUI();
+    }
+
+    // ============================================================================
+    // GATILHOS DE AÇÕES CÔMICAS NA BANHEIRA
+    // ============================================================================
+    function triggerSlipAction(s, withSound = true) {
+      s.action = 'slip';
+      s.actionTimer = 1.35;
+      s.spinAngle = 0;
+      s.jumpHeight = 0;
+      spawnParticles(s.x, s.y, 'panic', 5);
+      addFloatingText(s.x, s.y - 34, 'ESCORREGOU! 💫', '#f87171');
+      if (withSound) {
+        playSound('slip');
+      }
+    }
+
+    function triggerDiveAction(s) {
+      s.action = 'dive';
+      s.actionTimer = 1.8;
+      playSound('splash');
+      spawnParticles(s.x, s.y, 'splash', 7);
+      addFloatingText(s.x, s.y - 28, 'TIBUM! 💦', '#38bdf8');
+    }
+
+    function triggerDanceAction(s) {
+      s.action = 'dance';
+      s.actionTimer = 1.95;
+      spawnParticles(s.x, s.y - 10, 'celebrate', 4);
+      addFloatingText(s.x, s.y - 34, 'UBAPÁ! 🎶', '#fde047');
+    }
+
+    // ============================================================================
+    // LOOP DE ATUALIZAÇÃO (POSICIONAMENTO EM CAMADAS + REPULSÃO SUAVE)
+    // ============================================================================
+    function update(dt) {
+      if (!roundActive) return;
+
+      timerAccumulator += dt;
+      if (timerAccumulator >= 1) {
+        timerAccumulator -= 1;
+        timeLeft = Math.max(0, timeLeft - 1);
+        updateTimerUI();
+        if (timeLeft === 0) {
+          endRound();
+          return;
+        }
+      }
+
+      const isSlowMo = camera.dramaticTimer > 0;
+      if (isSlowMo) {
+        camera.dramaticTimer -= dt;
+        if (camera.focusSwimmer) {
+          camera.targetX = camera.focusSwimmer.x;
+          camera.targetY = camera.focusSwimmer.y - 12;
+          camera.targetZoom = 1.72;
+        }
+        if (camera.dramaticTimer <= 0) {
+          camera.dramaticTimer = 0;
+          camera.focusSwimmer = null;
+          camera.targetX = width / 2;
+          camera.targetY = height * 0.54;
+          camera.targetZoom = 1.0;
+          swimmers.forEach(s => {
+            s.dramaticHero = false;
+            s.scale = 1;
+          });
+          stageEl.classList.remove('dramatic-active');
+          document.getElementById('dramatic-banner').classList.add('hidden');
+        }
+      } else {
+        camera.targetX = width / 2;
+        camera.targetY = height * 0.54;
+        camera.targetZoom = 1.0;
+      }
+
+      camera.x += (camera.targetX - camera.x) * 6 * dt;
+      camera.y += (camera.targetY - camera.y) * 6 * dt;
+      camera.zoom += (camera.targetZoom - camera.zoom) * 6 * dt;
+
+      const tub = getTubGeometry();
+      const crowdScale = getCrowdScaleFactor();
+
+      audience.forEach(person => {
+        if (person.speechTimer > 0) person.speechTimer -= dt;
+      });
+
+      while (soaps.length < 9) {
+        spawnSoap();
+      }
+
+      // Atualiza Sabonetes Flutuantes
+      soaps.forEach(soap => {
+        soap.wobble += dt * 7;
+        soap.x += soap.vx * dt * (isSlowMo ? 0.3 : 1);
+        soap.y += soap.vy * dt * (isSlowMo ? 0.3 : 1);
+
+        const nx = (soap.x - tub.cx) / (tub.rx * 0.80);
+        const ny = (soap.y - tub.cy) / (tub.ry * 0.80);
+        if (nx * nx + ny * ny > 1) {
+          const ang = Math.atan2(soap.y - tub.cy, soap.x - tub.cx);
+          soap.x = tub.cx + Math.cos(ang) * (tub.rx * 0.78);
+          soap.y = tub.cy + Math.sin(ang) * (tub.ry * 0.78);
+          soap.vx *= -0.9;
+          soap.vy *= -0.9;
+        }
+      });
+
+      // Atualiza Competidores Humanos Caricatos
+      swimmers.forEach((s, idx) => {
+        const animSpeed = (s.turboTimer > 0 || s.action === 'dance' || s.action === 'victory') ? 17 : 11;
+        s.animPhase += dt * animSpeed;
+        if (s.turboTimer > 0) s.turboTimer -= dt;
+        if (s.magnetTimer > 0) s.magnetTimer -= dt;
+
+        const timeScale = (isSlowMo && !s.dramaticHero) ? 0.22 : 1.0;
+
+        if (s.actionTimer > 0) {
+          s.actionTimer -= dt * timeScale;
+          if (s.action === 'slip') {
+            const progress = 1 - Math.max(0, s.actionTimer / 1.35);
+            s.spinAngle = progress * Math.PI * 2;
+            s.jumpHeight = Math.sin(progress * Math.PI) * 32;
+          } else {
+            s.spinAngle = 0;
+            s.jumpHeight = 0;
+          }
+
+          if (s.actionTimer <= 0) {
+            s.action = 'swim';
+            s.spinAngle = 0;
+            s.jumpHeight = 0;
+          }
+        } else if (!s.dramaticHero) {
+          s.nextComedyCooldown -= dt * timeScale;
+          if (s.nextComedyCooldown <= 0) {
+            s.nextComedyCooldown = 2.2 + Math.random() * 2.6;
+            const roll = Math.random();
+            if (roll < 0.44) {
+              triggerDanceAction(s);
+            } else if (roll < 0.78) {
+              triggerDiveAction(s);
+            } else {
+              triggerSlipAction(s, true);
+            }
+          }
+        }
+
+        // Busca o sabonete mais próximo
+        let nearestSoap = null;
+        let minDist = Infinity;
+        soaps.forEach(soap => {
+          const d = Math.hypot(soap.x - s.x, soap.y - s.y);
+          if (d < minDist) {
+            minDist = d;
+            nearestSoap = soap;
+          }
+        });
+        s.targetSoap = nearestSoap;
+
+        // Atração suave para o seu setor (slot) + perseguição leve ao sabonete próximo
+        const home = getHomeSlotPosition(idx, swimmers.length);
+        let desiredX = home.x + Math.cos(s.animPhase * 0.22 + idx) * 14;
+        let desiredY = home.y + Math.sin(s.animPhase * 0.22 + idx) * 11;
+
+        if (nearestSoap && minDist < 115) {
+          // Vai atrás do sabonete que está perto da sua área sem cruzar a banheira inteira
+          desiredX = desiredX * 0.45 + nearestSoap.x * 0.55;
+          desiredY = desiredY * 0.45 + nearestSoap.y * 0.55;
+        }
+
+        if (nearestSoap && s.magnetTimer > 0 && minDist < 145) {
+          nearestSoap.x += (s.x - nearestSoap.x) * 4.5 * dt;
+          nearestSoap.y += (s.y - nearestSoap.y) * 4.5 * dt;
+        }
+
+        const pullStrength = s.turboTimer > 0 ? 4.2 : 2.6;
+        s.vx += (desiredX - s.x) * pullStrength * dt;
+        s.vy += (desiredY - s.y) * pullStrength * dt;
+        s.vx *= 0.88;
+        s.vy *= 0.88;
+
+        s.x += s.vx * dt * timeScale;
+        s.y += s.vy * dt * timeScale;
+
+        // Mantém dentro da banheira
+        const nx = (s.x - tub.cx) / (tub.rx * 0.78);
+        const ny = (s.y - tub.cy) / (tub.ry * 0.78);
+        if (nx * nx + ny * ny > 1) {
+          const ang = Math.atan2(s.y - tub.cy, s.x - tub.cx);
+          s.x = tub.cx + Math.cos(ang) * (tub.rx * 0.76);
+          s.y = tub.cy + Math.sin(ang) * (tub.ry * 0.76);
+        }
+
+        // Coleta de sabonete
+        if (s.action !== 'dive') {
+          for (let i = soaps.length - 1; i >= 0; i--) {
+            const dist = Math.hypot(soaps[i].x - s.x, soaps[i].y - s.y);
+            if (dist < 28 * crowdScale * (s.scale || 1)) {
+              soaps.splice(i, 1);
+              s.score += 1;
+              s.action = 'victory';
+              s.actionTimer = 1.65;
+              playSound('soap');
+              spawnParticles(s.x, s.y - 12, 'celebrate', 7);
+              addFloatingText(s.x, s.y - 34, '+1 🧼 UHUU!', '#4ade80');
+              updateLeaderUI();
+            }
+          }
+        }
+      });
+
+      // FORÇA DE REPULSÃO ELÍPTICA (ANTI-SOBREPOSIÇÃO GARANTIDA)
+      // Mantém distância mínima vertical e horizontal para ninguém tapar o rosto ou etiqueta do outro
+      for (let pass = 0; pass < 2; pass++) {
+        for (let i = 0; i < swimmers.length; i++) {
+          for (let j = i + 1; j < swimmers.length; j++) {
+            const a = swimmers[i];
+            const b = swimmers[j];
+            const minDistX = 48 * crowdScale;
+            const minDistY = 54 * crowdScale; // Maior separação vertical para proteger o crachá @usuario
+
+            const dx = (b.x - a.x) / minDistX;
+            const dy = (b.y - a.y) / minDistY;
+            const ellipDist = Math.hypot(dx, dy);
+
+            if (ellipDist > 0 && ellipDist < 1) {
+              const push = (1 - ellipDist) * 0.5;
+              const nx = dx / ellipDist;
+              const ny = dy / ellipDist;
+
+              a.x -= nx * push * minDistX;
+              a.y -= ny * push * minDistY;
+              b.x += nx * push * minDistX;
+              b.y += ny * push * minDistY;
+            }
+          }
+        }
+      }
+
+      // Ondas de espuma
+      for (let i = shockwaves.length - 1; i >= 0; i--) {
+        const sw = shockwaves[i];
+        sw.r += 280 * dt;
+        sw.alpha -= 1.2 * dt;
+        if (sw.alpha <= 0 || sw.r >= sw.maxR) {
+          shockwaves.splice(i, 1);
+        }
+      }
+
+      // Partículas
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 65 * dt;
+        p.life -= dt;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      bubbles.forEach(b => {
+        b.phase += dt * 3;
+      });
+
+      for (let i = floatTexts.length - 1; i >= 0; i--) {
+        floatTexts[i].y -= 26 * dt;
+        floatTexts[i].life -= dt;
+        if (floatTexts[i].life <= 0) floatTexts.splice(i, 1);
+      }
+    }
+
+    // ============================================================================
+    // RENDERIZAÇÃO VISUAL EM CAMADAS DE PROFUNDIDADE (EIXO Y)
+    // ============================================================================
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.save();
+      ctx.translate(width / 2, height * 0.54);
+      ctx.scale(camera.zoom, camera.zoom);
+      ctx.translate(-camera.x, -camera.y);
+
+      const tub = getTubGeometry();
+      const crowdScale = getCrowdScaleFactor();
+
+      drawStageLights();
+      drawAudienceRing(tub);
+      drawBathtub(tub);
+      soaps.forEach(drawSoap);
+
+      shockwaves.forEach(sw => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(sw.x, sw.y, sw.r, sw.r * 0.72, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${Math.max(0, sw.alpha)})`;
+        ctx.lineWidth = 8;
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      // Ordenação por Profundidade no Eixo Y (quem está mais ao fundo é desenhado primeiro)
+      const sortedSwimmers = [...swimmers].sort((a, b) => a.y - b.y);
+      sortedSwimmers.forEach(s => drawRetroSwimmer(s, tub, crowdScale));
+
+      drawFoamBubbles();
+
+      particles.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.font = `${p.size}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(p.emoji, p.x, p.y);
+        ctx.restore();
+      });
+
+      floatTexts.forEach(ft => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, ft.life);
+        ctx.font = 'bold 12px Fredoka, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.strokeText(ft.text, ft.x, ft.y);
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      });
+
+      ctx.restore();
+    }
+
+    function drawStageLights() {
+      const time = performance.now() * 0.001;
+      ctx.save();
+      ctx.globalAlpha = 0.14;
+      for (let i = 0; i < 3; i++) {
+        const angle = Math.sin(time + i * 2) * 0.35;
+        ctx.beginPath();
+        ctx.moveTo(width * (0.25 + i * 0.25), 40);
+        ctx.lineTo(width * (0.25 + i * 0.25) + Math.sin(angle) * 260 - 90, height);
+        ctx.lineTo(width * (0.25 + i * 0.25) + Math.sin(angle) * 260 + 90, height);
+        ctx.closePath();
+        ctx.fillStyle = i % 2 === 0 ? '#fde047' : '#f472b6';
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawAudienceRing(tub) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(tub.cx, tub.cy - 10, tub.rx * 1.38, tub.ry * 1.32, 0, Math.PI, Math.PI * 2);
+      ctx.fillStyle = 'rgba(30, 27, 75, 0.78)';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#facc15';
+      ctx.stroke();
+      ctx.restore();
+
+      const time = performance.now() * 0.009;
+      audience.forEach(person => {
+        const danceBeat = time + person.jumpPhase;
+        const jump = Math.abs(Math.sin(danceBeat)) * 7;
+        const armWave = Math.sin(danceBeat * 2) * 5;
+        const px = person.x;
+        const py = person.y - jump;
+
+        ctx.save();
+
+        ctx.strokeStyle = person.skin;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(px - 6, py + 2);
+        ctx.lineTo(px - 12, py - 7 + armWave);
+        ctx.moveTo(px + 6, py + 2);
+        ctx.lineTo(px + 12, py - 7 - armWave);
+        ctx.stroke();
+
+        ctx.fillStyle = person.color;
+        ctx.beginPath();
+        ctx.roundRect(px - 7, py + 1, 14, 10, 4);
+        ctx.fill();
+        ctx.lineWidth = 1.3;
+        ctx.strokeStyle = '#0f172a';
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(px, py - 5, 8, 0, Math.PI * 2);
+        ctx.fillStyle = person.skin;
+        ctx.fill();
+        ctx.lineWidth = 1.4;
+        ctx.strokeStyle = '#1e1b18';
+        ctx.stroke();
+
+        ctx.fillStyle = person.hair;
+        ctx.beginPath();
+        ctx.arc(px, py - 7.5, 8, Math.PI * 1.05, Math.PI * 1.95);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(px - 2.8, py - 5.5, 2.3, 0, Math.PI * 2);
+        ctx.arc(px + 2.8, py - 5.5, 2.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(px - 2.8, py - 5.5, 1.1, 0, Math.PI * 2);
+        ctx.arc(px + 2.8, py - 5.5, 1.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.arc(px, py - 1.5, 2.3, 0, Math.PI);
+        ctx.fill();
+
+        if (person.speechTimer > 0 && person.speechText) {
+          const textW = Math.min(76, Math.max(44, person.speechText.length * 4.4));
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.roundRect(px - textW / 2, py - 33, textW, 13, 6);
+          ctx.fill();
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 7.5px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(person.speechText.slice(0, 15), px, py - 26.5);
+        } else {
+          ctx.font = 'bold 7.5px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#67e8f9';
+          ctx.fillText(person.name.slice(0, 10), px, py - 20);
+        }
+
+        ctx.restore();
+      });
+    }
+
+    function drawBathtub(tub) {
+      ctx.save();
+
+      ctx.beginPath();
+      ctx.ellipse(tub.cx, tub.cy + 14, tub.rx + 15, tub.ry + 15, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      ctx.fill();
+
+      const rimGrad = ctx.createLinearGradient(tub.cx - tub.rx, tub.cy - tub.ry, tub.cx + tub.rx, tub.cy + tub.ry);
+      rimGrad.addColorStop(0, '#fef08a');
+      rimGrad.addColorStop(0.5, '#ffffff');
+      rimGrad.addColorStop(1, '#f472b6');
+
+      ctx.beginPath();
+      ctx.ellipse(tub.cx, tub.cy, tub.rx + 13, tub.ry + 13, 0, 0, Math.PI * 2);
+      ctx.fillStyle = rimGrad;
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#eab308';
+      ctx.stroke();
+
+      const waterGrad = ctx.createRadialGradient(tub.cx, tub.cy - 20, 20, tub.cx, tub.cy, tub.rx);
+      waterGrad.addColorStop(0, '#38bdf8');
+      waterGrad.addColorStop(0.65, '#0284c7');
+      waterGrad.addColorStop(1, '#0369a1');
+
+      ctx.beginPath();
+      ctx.ellipse(tub.cx, tub.cy, tub.rx, tub.ry, 0, 0, Math.PI * 2);
+      ctx.fillStyle = waterGrad;
+      ctx.fill();
+
+      const t = performance.now() * 0.002;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.lineWidth = 2;
+      for (let r = 0.35; r <= 0.8; r += 0.22) {
+        ctx.beginPath();
+        ctx.ellipse(
+          tub.cx + Math.sin(t + r * 5) * 4,
+          tub.cy + Math.cos(t + r * 5) * 3,
+          tub.rx * r,
+          tub.ry * r,
+          0, 0, Math.PI * 2
+        );
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    function drawSoap(soap) {
+      ctx.save();
+      ctx.translate(soap.x, soap.y + Math.sin(soap.wobble) * 2.5);
+      ctx.rotate(Math.sin(soap.wobble * 0.7) * 0.25);
+
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.beginPath();
+      ctx.ellipse(0, 6, 11, 6.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = soap.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 11, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.beginPath();
+      ctx.ellipse(-3, -2.5, 3.8, 1.6, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    /**
+     * Desenha o PERSONAGEM HUMANO CARICATO DOS ANOS 90 COM PERSPECTIVA DE PROFUNDIDADE
+     */
+    function drawRetroSwimmer(s, tub, crowdScale) {
+      ctx.save();
+
+      // Perspectiva 2.5D sutil baseada na posição vertical na banheira
+      const depthNorm = (s.y - (tub.cy - tub.ry)) / (tub.ry * 2);
+      const perspective = 0.90 + Math.max(0, Math.min(1, depthNorm)) * 0.16;
+      const sc = (s.scale || 1) * crowdScale * perspective;
+
+      const isDancing = s.action === 'dance' || s.action === 'victory' || s.turboTimer > 0;
+      const isSlipping = s.action === 'slip';
+      const isDiving = s.action === 'dive';
+
+      const bob = isDiving ? 0 : Math.sin(s.animPhase) * (isDancing ? 4.2 : 2.2);
+      const hipWiggle = Math.sin(s.animPhase * 1.8) * (isDancing ? 5 : 2);
+
+      const x = s.x;
+      const y = s.y + bob - (s.jumpHeight || 0);
+
+      ctx.translate(x, y);
+      ctx.scale(sc, sc);
+
+      // 1. Sombra suave na água para destacar o personagem dos vizinhos
+      ctx.fillStyle = 'rgba(3, 105, 161, 0.55)';
+      ctx.beginPath();
+      ctx.ellipse(0, 14 + (s.jumpHeight || 0), 21, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Aura de Destaque (Turbo ou Presente Caro)
+      if (s.dramaticHero || s.turboTimer > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, 31, 0, Math.PI * 2);
+        ctx.fillStyle = s.dramaticHero ? 'rgba(250, 204, 21, 0.38)' : 'rgba(251, 191, 36, 0.28)';
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([5, 4]);
+        ctx.strokeStyle = s.dramaticHero ? '#fde047' : '#38bdf8';
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 3. Ondinha na superfície
+      ctx.beginPath();
+      ctx.ellipse(0, 14 + (s.jumpHeight || 0), 21, 7.5, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+
+      // CENA CÔMICA 1: MERGULHO DE PONTA ("TIBUM!")
+      if (isDiving) {
+        const kick = Math.sin(s.animPhase * 2.4) * 6;
+
+        ctx.fillStyle = s.gender === 'F' ? '#ec4899' : '#2563eb';
+        ctx.beginPath();
+        ctx.ellipse(0, 4, 11, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+
+        drawFloatieRing(s.floatie, Math.sin(s.animPhase) * 0.12);
+
+        ctx.strokeStyle = s.skin;
+        ctx.lineWidth = 5.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-5, 2);
+        ctx.lineTo(-9, -15 + kick);
+        ctx.moveTo(5, 2);
+        ctx.lineTo(9, -15 - kick);
+        ctx.stroke();
+
+        ctx.fillStyle = s.skin;
+        ctx.beginPath();
+        ctx.ellipse(-10, -17 + kick, 5, 3, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(10, -17 - kick, 5, 3, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#1e1b18';
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+
+        drawNameBadge(s, -36);
+        ctx.restore();
+        return;
+      }
+
+      // CENA CÔMICA 2: DANÇA, NADO OU PIRUETA NO AR
+      ctx.save();
+      if (isSlipping) {
+        ctx.rotate(s.spinAngle);
+      } else {
+        ctx.rotate(Math.sin(s.animPhase * 1.4) * (isDancing ? 0.14 : 0.05));
+      }
+
+      // 4. Bracinhos Caricatos
+      ctx.strokeStyle = s.skin;
+      ctx.lineWidth = 4.8;
+      ctx.lineCap = 'round';
+
+      let leftHandX, leftHandY, rightHandX, rightHandY;
+      if (s.action === 'victory' || isDancing) {
+        const wave = Math.sin(s.animPhase * 2) * 5.5;
+        leftHandX = -20;
+        leftHandY = -12 + wave;
+        rightHandX = 20;
+        rightHandY = -12 - wave;
+      } else if (isSlipping) {
+        leftHandX = -21;
+        leftHandY = -16;
+        rightHandX = 21;
+        rightHandY = -16;
+      } else {
+        const paddle = Math.sin(s.animPhase * 1.5) * 5;
+        leftHandX = -18;
+        leftHandY = 4 + paddle;
+        rightHandX = 18;
+        rightHandY = 4 - paddle;
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(-10, 0);
+      ctx.lineTo(leftHandX, leftHandY);
+      ctx.moveTo(10, 0);
+      ctx.lineTo(rightHandX, rightHandY);
+      ctx.stroke();
+
+      ctx.fillStyle = s.skin;
+      ctx.beginPath();
+      ctx.arc(leftHandX, leftHandY, 3.5, 0, Math.PI * 2);
+      ctx.arc(rightHandX, rightHandY, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 5. Tronco / Traje de Banho Retrô Anos 90
+      ctx.save();
+      ctx.translate(hipWiggle * 0.4, 5);
+      ctx.fillStyle = s.skin;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 12, 12.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = 1.8;
+      ctx.strokeStyle = '#1e1b18';
+      ctx.stroke();
+
+      if (s.gender === 'F') {
+        ctx.fillStyle = '#ec4899';
+        ctx.beginPath();
+        ctx.ellipse(0, 1, 11.8, 11, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#9d174d';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.strokeStyle = '#ec4899';
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        ctx.moveTo(-6, -11);
+        ctx.lineTo(-6, -4);
+        ctx.moveTo(6, -11);
+        ctx.lineTo(6, -4);
+        ctx.stroke();
+
+        const flowers = [[-5, 0], [5, 1], [0, 6]];
+        flowers.forEach(([fx, fy]) => {
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.arc(fx, fy, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      } else {
+        ctx.fillStyle = '#2563eb';
+        ctx.beginPath();
+        ctx.ellipse(0, 5, 11.8, 7.2, 0, 0, Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = '#1e3a8a';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-10, 5, 20, 2.2);
+        ctx.fillRect(-8, 9, 16, 2);
+      }
+
+      drawFloatieRing(s.floatie, 0);
+      ctx.restore();
+
+      // 6. Cabeça Caricata Expressiva
+      ctx.beginPath();
+      ctx.arc(0, -12, 13, 0, Math.PI * 2);
+      ctx.fillStyle = s.skin;
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#1e1b18';
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(244, 63, 94, 0.35)';
+      ctx.beginPath();
+      ctx.ellipse(-7.5, -9, 2.8, 1.7, 0, 0, Math.PI * 2);
+      ctx.ellipse(7.5, -9, 2.8, 1.7, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 7. Touca de Banho com Babados / Topete e Óculos na Testa
+      if (s.gender === 'F') {
+        ctx.fillStyle = '#f472b6';
+        ctx.beginPath();
+        ctx.arc(0, -14, 13.5, Math.PI * 1.02, Math.PI * 1.98);
+        ctx.fill();
+        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = '#be185d';
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        for (let rx = -10.5; rx <= 10.5; rx += 5.25) {
+          ctx.beginPath();
+          ctx.arc(rx, -15, 2.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#fde047';
+        ctx.beginPath();
+        ctx.arc(-9, -20.5, 4, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = s.hair;
+        ctx.beginPath();
+        ctx.arc(0, -15, 13, Math.PI * 1.05, Math.PI * 1.95);
+        ctx.fill();
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.7;
+        ctx.beginPath();
+        ctx.roundRect(-9.5, -22.5, 8, 5.2, 2.5);
+        ctx.roundRect(1.5, -22.5, 8, 5.2, 2.5);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // 8. Olhos Esbugalhados Expressivos
+      const eyeScale = (isSlipping || s.dramaticHero) ? 1.25 : 1.04;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(-4.8, -12, 4.3 * eyeScale, 0, Math.PI * 2);
+      ctx.arc(4.8, -12, 4.3 * eyeScale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      let lookX = 0;
+      let lookY = 0;
+      if (isSlipping) {
+        lookX = Math.cos(s.animPhase * 2.5) * 2;
+        lookY = Math.sin(s.animPhase * 2.5) * 2;
+      } else if (s.targetSoap) {
+        const angToSoap = Math.atan2(s.targetSoap.y - s.y, s.targetSoap.x - s.x);
+        lookX = Math.cos(angToSoap) * 1.7;
+        lookY = Math.sin(angToSoap) * 1.7;
+      }
+
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.arc(-4.8 + lookX, -12 + lookY, 1.8, 0, Math.PI * 2);
+      ctx.arc(4.8 + lookX, -12 + lookY, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 9. Estrelinhas girando ao escorregar
+      if (isSlipping) {
+        for (let st = 0; st < 3; st++) {
+          const stAng = s.animPhase * 2 + (st * Math.PI * 2) / 3;
+          const sx = Math.cos(stAng) * 15;
+          const sy = -27 + Math.sin(stAng) * 5;
+          ctx.font = '10px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('⭐', sx, sy);
+        }
+      }
+
+      // 10. Óculos Escuros + Coroa no Modo Gigante (Presente Caro)
+      if (s.dramaticHero) {
+        ctx.fillStyle = '#09090b';
+        ctx.fillRect(-11.5, -15, 9.5, 5.2);
+        ctx.fillRect(2, -15, 9.5, 5.2);
+        ctx.fillRect(-2, -14, 4, 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-9.5, -14, 2, 2);
+        ctx.fillRect(4, -14, 2, 2);
+
+        ctx.fillStyle = '#facc15';
+        ctx.strokeStyle = '#854d0e';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-8, -23.5);
+        ctx.lineTo(-10, -32);
+        ctx.lineTo(-4, -27.5);
+        ctx.lineTo(0, -34);
+        ctx.lineTo(4, -27.5);
+        ctx.lineTo(10, -32);
+        ctx.lineTo(8, -23.5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // 11. Bigode Estiloso Anos 90
+      if (s.gender === 'M') {
+        ctx.fillStyle = s.hair;
+        ctx.beginPath();
+        ctx.ellipse(-3.4, -6.5, 4.3, 1.9, -0.25, 0, Math.PI * 2);
+        ctx.ellipse(3.4, -6.5, 4.3, 1.9, 0.25, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 12. Boca Expressiva
+      if (isSlipping || s.dramaticHero) {
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.ellipse(0, -2.5, 4.2, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      } else if (s.action === 'victory' || isDancing) {
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.arc(0, -4.5, 4.8, 0, Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = '#1e1b18';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.arc(0, -5, 4.3, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+
+      // 13. Etiqueta Compacta e Nítida com Foto/Inicial e @username
+      drawNameBadge(s, -41);
+
+      ctx.restore();
+    }
+
+    function drawFloatieRing(floatieType, tilt = 0) {
+      ctx.save();
+      ctx.rotate(tilt);
+      if (floatieType === 'duck') {
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 5.2;
+        ctx.beginPath();
+        ctx.ellipse(0, 6, 16, 6.2, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#fde047';
+        ctx.beginPath();
+        ctx.arc(14, 2, 4.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#f97316';
+        ctx.beginPath();
+        ctx.ellipse(18, 2.5, 2.8, 1.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (floatieType === 'flamingo') {
+        ctx.strokeStyle = '#f472b6';
+        ctx.lineWidth = 5.2;
+        ctx.beginPath();
+        ctx.ellipse(0, 6, 16, 6.2, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = '#ec4899';
+        ctx.lineWidth = 2.8;
+        ctx.beginPath();
+        ctx.moveTo(-14, 5);
+        ctx.quadraticCurveTo(-17, -4, -12, -4);
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 5.2;
+        ctx.beginPath();
+        ctx.ellipse(0, 6, 16, 6.2, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawNameBadge(s, tagY) {
+      ctx.fillStyle = s.dramaticHero ? '#facc15' : 'rgba(15, 23, 42, 0.92)';
+      ctx.beginPath();
+      ctx.roundRect(-34, tagY - 7.5, 76, 15, 7.5);
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = s.dramaticHero ? '#dc2626' : '#facc15';
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(-34, tagY, 9.5, 0, Math.PI * 2);
+      ctx.fillStyle = s.color;
+      ctx.fill();
+      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9.5px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(s.initial, -34, tagY + 0.5);
+
+      ctx.fillStyle = s.dramaticHero ? '#000000' : '#ffffff';
+      ctx.font = 'bold 8px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      const label = `${s.name.slice(0, 7)} ${s.score}🧼`;
+      ctx.fillText(label, -22, tagY);
+    }
+
+    function drawFoamBubbles() {
+      bubbles.forEach(b => {
+        const pulse = Math.sin(b.phase) * 1.8;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, Math.max(2, b.r + pulse), 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.78)';
+        ctx.fill();
+        ctx.restore();
+      });
+    }
+
+    // ============================================================================
+    // ATUALIZAÇÃO DE UI E CICLO DA RODADA
+    // ============================================================================
+    function updateTimerUI() {
+      const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+      const secs = (timeLeft % 60).toString().padStart(2, '0');
+      const el = document.getElementById('timer-display');
+      if (!el) return;
+      el.textContent = `${mins}:${secs}`;
+      if (timeLeft <= 10) {
+        el.classList.add('text-red-400', 'animate-pulse');
+      } else {
+        el.classList.remove('text-red-400', 'animate-pulse');
+      }
+    }
+
+    function updateCountUI() {
+      const el = document.getElementById('count-display');
+      if (el) el.textContent = swimmers.length;
+    }
+
+    function updateLeaderUI() {
+      const el = document.getElementById('leader-display');
+      if (!el) return;
+      if (swimmers.length === 0) {
+        el.textContent = 'Aguardando...';
+        return;
+      }
+      const sorted = [...swimmers].sort((a, b) => b.score - a.score);
+      const top = sorted[0];
+      el.textContent = `${top.name} (${top.score}🧼)`;
+    }
+
+    function endRound() {
+      roundActive = false;
+      camera.dramaticTimer = 0;
+      stageEl.classList.remove('dramatic-active');
+      document.getElementById('dramatic-banner').classList.add('hidden');
+
+      const overlay = document.getElementById('podium-overlay');
+      const list = document.getElementById('podium-list');
+      list.innerHTML = '';
+      playSound('fanfare');
+
+      const sorted = [...swimmers].sort((a, b) => b.score - a.score).slice(0, 3);
+      if (sorted.length === 0) {
+        list.innerHTML = '<p class="text-sm text-white">Ninguém pulou na banheira nesta rodada!</p>';
+      } else {
+        const medals = ['🥇', '🥈', '🥉'];
+        sorted.forEach((player, idx) => {
+          const row = document.createElement('div');
+          row.className = 'bg-white/10 border border-yellow-400/40 rounded-xl px-3 py-2 flex items-center justify-between text-white';
+          row.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="text-xl">${medals[idx]}</span>
+              <span class="font-bold text-sm truncate max-w-[150px]">${player.name}</span>
+            </div>
+            <span class="font-['Bungee'] text-yellow-300 text-sm">${player.score} 🧼</span>
+          `;
+          list.appendChild(row);
+        });
+      }
+
+      overlay.classList.remove('hidden');
+    }
+
+    function resetRound() {
+      timeLeft = 60;
+      roundActive = true;
+      timerAccumulator = 0;
+      swimmers = [];
+      audience = [];
+      soaps = [];
+      particles = [];
+      shockwaves = [];
+      floatTexts = [];
+      camera.dramaticTimer = 0;
+      camera.focusSwimmer = null;
+      camera.zoom = 1;
+      camera.targetZoom = 1;
+
+      stageEl.classList.remove('dramatic-active');
+      document.getElementById('dramatic-banner').classList.add('hidden');
+      document.getElementById('podium-overlay').classList.add('hidden');
+      document.getElementById('event-feed').innerHTML = '';
+
+      initBubbles();
+      for (let i = 0; i < 9; i++) spawnSoap();
+      updateTimerUI();
+      updateLeaderUI();
+
+      // Popula imediatamente 8 torcedores e 6 competidores organizados nos anéis da banheira
+      for (let i = 0; i < 8; i++) simulateComment();
+      const startActions = ['dance', 'dive', 'victory', 'dance', 'dive', 'victory'];
+      for (let i = 0; i < 6; i++) simulateRosa(null, startActions[i]);
+      updateCountUI();
+    }
+
+    // Loop Principal de Animação
+    function gameLoop(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+      lastTime = timestamp;
+
+      update(dt);
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.onload = function () {
+      resizeCanvas();
+      resetRound();
+      requestAnimationFrame(gameLoop);
+    };
+  </script>
+</body>
+</html>
